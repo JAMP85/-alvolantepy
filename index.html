@@ -255,13 +255,16 @@
   ytScript.src = 'https://www.youtube.com/iframe_api';
   document.head.appendChild(ytScript);
 
-  document.addEventListener('click', function unmuteOnce(){
-    if(ytReady && ytPlayer){
-      ytPlayer.unMute();
-      ytPlayer.playVideo();
-      document.removeEventListener('click', unmuteOnce); // solo se elimina si se ejecutó con éxito
-    }
-  });
+  function unmuteOnce(){
+  if(ytReady && ytPlayer){
+    ytPlayer.unMute();
+    ytPlayer.playVideo();
+    document.removeEventListener('click', unmuteOnce);
+    document.removeEventListener('touchend', unmuteOnce);
+  }
+}
+document.addEventListener('click', unmuteOnce);
+document.addEventListener('touchend', unmuteOnce);
 
   const io = new IntersectionObserver((entries)=>{
     entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('show'); });
