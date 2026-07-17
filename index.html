@@ -54,7 +54,7 @@
       <img src="image_4.jpeg" alt="Logo Al Volante PY" class="w-9 h-9 rounded-full">
       <span class="font-display text-sm tracking-wide text-white">@alvolantepy</span>
       <!-- Reproductor demo oculto (YouTube IFrame API): arranca muteado por política del navegador y se activa con el primer clic en cualquier parte de la página -->
-      <div id="demoPlayer" class="w-px h-px opacity-0 absolute pointer-events-none overflow-hidden"></div>
+      <div id="demoPlayer" style="position: absolute; left: -9999px; top: 0; width: 300px; height: 200px; opacity: 0.01; pointer-events: none;"></div>
     </div>
     <!-- EDITAR: ancla al bloque de registro -->
     <a href="guia-historias-de-plataforma.pdf" download class="hidden sm:inline-block text-xs font-semibold px-4 py-2 rounded-full border border-cyan-400/40 text-cyan-300 hover:bg-cyan-400/10 transition">Descargar guía</a>
@@ -230,18 +230,18 @@
 </footer>
 
 <script>
-  // Reproductor demo — YouTube IFrame API (más confiable que postMessage manual)
+  // Reproductor demo — YouTube IFrame API (Optimizada para móviles)
   let ytPlayer, ytReady = false;
   window.onYouTubeIframeAPIReady = function(){
     ytPlayer = new YT.Player('demoPlayer', {
-      width: '1',
-      height: '1',
+      width: '300',
+      height: '200',
       videoId: 'PBWmt-SR00Q',
       playerVars: { autoplay: 1, mute: 1, controls: 0, loop: 1, playlist: 'PBWmt-SR00Q', playsinline: 1 },
       events: {
         onReady: function(e){
           const ifr = e.target.getIframe();
-          if(ifr){ ifr.style.cssText = 'position:absolute;opacity:0;pointer-events:none;'; }
+          if(ifr){ ifr.style.cssText = 'position:absolute; left: -9999px; top: 0; width: 300px; height: 200px; opacity:0.01; pointer-events:none;'; }
           ytReady = true; e.target.playVideo(); console.log('[demo] player listo, reproduciendo muteado');
         },
         onError: function(e){
@@ -256,15 +256,16 @@
   document.head.appendChild(ytScript);
 
   function unmuteOnce(){
-  if(ytReady && ytPlayer){
-    ytPlayer.unMute();
-    ytPlayer.playVideo();
-    document.removeEventListener('click', unmuteOnce);
-    document.removeEventListener('touchend', unmuteOnce);
+    if(ytReady && ytPlayer){
+      ytPlayer.playVideo();     // 1. Primero play para validar la acción física del usuario en el celular
+      ytPlayer.unMute();        // 2. Inmediatamente después quitamos el silencio
+      ytPlayer.setVolume(100);  // 3. Forzamos el volumen al máximo
+      document.removeEventListener('click', unmuteOnce);
+      document.removeEventListener('touchend', unmuteOnce);
+    }
   }
-}
-document.addEventListener('click', unmuteOnce);
-document.addEventListener('touchend', unmuteOnce);
+  document.addEventListener('click', unmuteOnce);
+  document.addEventListener('touchend', unmuteOnce);
 
   const io = new IntersectionObserver((entries)=>{
     entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('show'); });
