@@ -53,8 +53,8 @@
     <div class="flex items-center gap-2">
       <img src="image_4.jpeg" alt="Logo Al Volante PY" class="w-9 h-9 rounded-full">
       <span class="font-display text-sm tracking-wide text-white">@alvolantepy</span>
-      <!-- Contenedor del reproductor optimizado en tamaño y posición oculta para pantallas móviles -->
-      <div id="demoPlayer" style="position: absolute; left: -9999px; top: 0; width: 300px; height: 200px; opacity: 0.01; pointer-events: none;"></div>
+      <!-- TRUCO PARA MÓVILES: El reproductor ocupa toda la pantalla de fondo con z-index -1 y opacidad mínima. El celular cree que está totalmente visible y nunca lo congela, pero para el ojo humano es 100% invisible y permite interactuar con toda la web sin bloquear clics -->
+      <div id="demoPlayer" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; opacity: 0.001; pointer-events: none;"></div>
     </div>
     <a href="guia-historias-de-plataforma.pdf" download class="hidden sm:inline-block text-xs font-semibold px-4 py-2 rounded-full border border-cyan-400/40 text-cyan-300 hover:bg-cyan-400/10 transition">Descargar guía</a>
   </div>
@@ -215,30 +215,33 @@
       <img src="image_4.jpeg" alt="Logo Al Volante PY" class="w-8 h-8 rounded-full">
       <span class="font-display text-xs text-white">@alvolantepy</span>
     </div>
+    <!-- ENLACES DE REDES SOCIALES CONFIGURADOS CORRECTAMENTE -->
     <div class="flex gap-5 text-xs text-gray-400">
-      <a href="#" class="hover:text-cyan-300 transition">TikTok</a>
-      <a href="#" class="hover:text-cyan-300 transition">Instagram</a>
-      <a href="#" class="hover:text-cyan-300 transition">Facebook</a>
-      <a href="#" class="hover:text-cyan-300 transition">YouTube @alvolantepyOficial</a>
+      <a href="https://www.tiktok.com/@alvolantepy?_r=1&_t=ZS-987FIiDdNVV" target="_blank" class="hover:text-cyan-300 transition">TikTok</a>
+      <a href="https://www.instagram.com/alvolantepy?igsh=anU4b2d2bDNxdWk%3D&utm_source=qr" target="_blank" class="hover:text-cyan-300 transition">Instagram</a>
+      <a href="https://www.facebook.com/share/1Gifx3bxNL/?mibextid=wwXIfr" target="_blank" class="hover:text-cyan-300 transition">Facebook</a>
+      <a href="https://youtube.com/@alvolantepyoficial?si=6t3kQFnzZg3vu3Qc" target="_blank" class="hover:text-cyan-300 transition">YouTube @alvolantepyOficial</a>
     </div>
     <p class="text-[11px] text-gray-600">© 2026 Historias de Plataforma. Todos los derechos reservados.</p>
   </div>
 </footer>
 
 <script>
-  // Reproductor demo — YouTube IFrame API (Optimizada para móviles)
+  // Reproductor demo — YouTube IFrame API (Optimizada a pantalla completa invisible)
   let ytPlayer, ytReady = false;
   window.onYouTubeIframeAPIReady = function(){
     ytPlayer = new YT.Player('demoPlayer', {
-      width: '300',
-      height: '200',
+      width: '100%',
+      height: '100%',
       videoId: 'PBWmt-SR00Q',
       playerVars: { autoplay: 1, mute: 1, controls: 0, loop: 1, playlist: 'PBWmt-SR00Q', playsinline: 1 },
       events: {
         onReady: function(e){
           ytReady = true; 
+          const ifr = e.target.getIframe();
+          if(ifr){ ifr.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1; opacity:0.001; pointer-events:none;'; }
           e.target.playVideo(); 
-          console.log('[demo] player listo, reproduciendo muteado');
+          console.log('[demo] player listo en viewport');
         },
         onError: function(e){
           const causas = {2:'ID de video inválido', 5:'Error de HTML5 player', 100:'Video no encontrado / eliminado', 101:'El dueño del video desactivó la reproducción incrustada (embed)', 150:'El dueño del video desactivó la reproducción incrustada (embed)'};
@@ -253,15 +256,15 @@
 
   function unmuteOnce(){
     if(ytReady && ytPlayer){
-      ytPlayer.playVideo();     // 1. Primero play para validar la acción física en móviles
-      ytPlayer.unMute();        // 2. Inmediatamente después quitamos el silencio
-      ytPlayer.setVolume(100);  // 3. Forzamos volumen al máximo
+      ytPlayer.playVideo();     
+      ytPlayer.unMute();        
+      ytPlayer.setVolume(100);  
       document.removeEventListener('click', unmuteOnce);
-      document.removeEventListener('touchend', unmuteOnce);
+      document.removeEventListener('touchstart', unmuteOnce);
     }
   }
   document.addEventListener('click', unmuteOnce);
-  document.addEventListener('touchend', unmuteOnce);
+  document.addEventListener('touchstart', unmuteOnce); // touchstart entrega de inmediato el permiso de audio en iOS/Android
 
   const io = new IntersectionObserver((entries)=>{
     entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('show'); });
