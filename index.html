@@ -53,8 +53,9 @@
     <div class="flex items-center gap-2">
       <img src="image_4.jpeg" alt="Logo Al Volante PY" class="w-9 h-9 rounded-full">
       <span class="font-display text-sm tracking-wide text-white">@alvolantepy</span>
-      <!-- TRUCO PARA MÓVILES: El reproductor ocupa toda la pantalla de fondo con z-index -1 y opacidad mínima. El celular cree que está totalmente visible y nunca lo congela, pero para el ojo humano es 100% invisible y permite interactuar con toda la web sin bloquear clics -->
-      <div id="demoPlayer" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; opacity: 0.001; pointer-events: none;"></div>
+      
+      <!-- AUDIO NATIVO: Apuntando exactamente a tu archivo subido -->
+      <audio id="bgAudio" loop src="DEMO%20JM%20MEZA.mp3"></audio>
     </div>
     <a href="guia-historias-de-plataforma.pdf" download class="hidden sm:inline-block text-xs font-semibold px-4 py-2 rounded-full border border-cyan-400/40 text-cyan-300 hover:bg-cyan-400/10 transition">Descargar guía</a>
   </div>
@@ -83,6 +84,7 @@
     <div class="absolute inset-0 bg-gradient-to-t from-[#0B0F19] via-[#0B0F19]/30 to-transparent"></div>
   </div>
 </section>
+<section>
   <div class="max-w-6xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-4 px-5 py-8">
     <div class="odometer rounded-lg py-4 text-center fade-in">
       <p class="font-meter text-2xl sm:text-3xl font-bold" style="color:var(--cyan)">+18.500</p>
@@ -215,56 +217,62 @@
       <img src="image_4.jpeg" alt="Logo Al Volante PY" class="w-8 h-8 rounded-full">
       <span class="font-display text-xs text-white">@alvolantepy</span>
     </div>
-    <!-- ENLACES DE REDES SOCIALES CONFIGURADOS CORRECTAMENTE -->
     <div class="flex gap-5 text-xs text-gray-400">
       <a href="https://www.tiktok.com/@alvolantepy?_r=1&_t=ZS-987FIiDdNVV" target="_blank" class="hover:text-cyan-300 transition">TikTok</a>
       <a href="https://www.instagram.com/alvolantepy?igsh=anU4b2d2bDNxdWk%3D&utm_source=qr" target="_blank" class="hover:text-cyan-300 transition">Instagram</a>
       <a href="https://www.facebook.com/share/1Gifx3bxNL/?mibextid=wwXIfr" target="_blank" class="hover:text-cyan-300 transition">Facebook</a>
-      <a href="https://youtube.com/@alvolantepyoficial?si=6t3kQFnzZg3vu3Qc" target="_blank" class="hover:text-cyan-300 transition">YouTube @alvolantepyOficial</a>
+      <a href="https://youtube.com/@alvolantepyoficial?si=6t3kQFnzZg3vu3Qc" target="_blank" class="hover:text-cyan-300 transition">YouTube</a>
     </div>
     <p class="text-[11px] text-gray-600">© 2026 Historias de Plataforma. Todos los derechos reservados.</p>
   </div>
 </footer>
 
-<script>
-  // Reproductor demo — YouTube IFrame API (Optimizada a pantalla completa invisible)
-  let ytPlayer, ytReady = false;
-  window.onYouTubeIframeAPIReady = function(){
-    ytPlayer = new YT.Player('demoPlayer', {
-      width: '100%',
-      height: '100%',
-      videoId: 'PBWmt-SR00Q',
-      playerVars: { autoplay: 1, mute: 1, controls: 0, loop: 1, playlist: 'PBWmt-SR00Q', playsinline: 1 },
-      events: {
-        onReady: function(e){
-          ytReady = true; 
-          const ifr = e.target.getIframe();
-          if(ifr){ ifr.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1; opacity:0.001; pointer-events:none;'; }
-          e.target.playVideo(); 
-          console.log('[demo] player listo en viewport');
-        },
-        onError: function(e){
-          const causas = {2:'ID de video inválido', 5:'Error de HTML5 player', 100:'Video no encontrado / eliminado', 101:'El dueño del video desactivó la reproducción incrustada (embed)', 150:'El dueño del video desactivó la reproducción incrustada (embed)'};
-          console.error('[demo] YouTube error', e.data, causas[e.data] || 'Causa desconocida');
-        }
-      }
-    });
-  };
-  const ytScript = document.createElement('script');
-  ytScript.src = 'https://www.youtube.com/iframe_api';
-  document.head.appendChild(ytScript);
+<!-- BOTÓN FLOTANTE DE REPRODUCTOR (MUTE/UNMUTE) -->
+<button id="audioToggleBtn" onclick="toggleAudio(event)" class="fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full bg-[#111827] border border-cyan-400/30 flex items-center justify-center text-cyan-300 shadow-xl backdrop-blur-md hover:bg-cyan-400/10 transition-all duration-300">
+  <svg id="audioIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 9.75 19.5 12m0 0 2.25 2.25M19.5 12l2.25-2.25M19.5 12l-2.25 2.25m-10.5-6 4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z" />
+  </svg>
+</button>
 
-  function unmuteOnce(){
-    if(ytReady && ytPlayer){
-      ytPlayer.playVideo();     
-      ytPlayer.unMute();        
-      ytPlayer.setVolume(100);  
-      document.removeEventListener('click', unmuteOnce);
-      document.removeEventListener('touchstart', unmuteOnce);
+<script>
+  const audio = document.getElementById('bgAudio');
+  const audioBtn = document.getElementById('audioToggleBtn');
+  const audioIcon = document.getElementById('audioIcon');
+  let audioStarted = false;
+
+  const iconMuted = `<path stroke-linecap="round" stroke-linejoin="round" d="M17.25 9.75 19.5 12m0 0 2.25 2.25M19.5 12l2.25-2.25M19.5 12l-2.25 2.25m-10.5-6 4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z" />`;
+  const iconPlaying = `<path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 0 1 0 12.728M16.463 8.288a5.25 5.25 0 0 1 0 7.424M6.75 8.25l4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z" />`;
+
+  function arrancarAudio() {
+    if (!audioStarted) {
+      audio.play().then(() => {
+        audioStarted = true;
+        audioIcon.innerHTML = iconPlaying;
+        audioBtn.classList.add('glow-cyan', 'border-cyan-400');
+        document.removeEventListener('click', arrancarAudio);
+        document.removeEventListener('touchstart', arrancarAudio);
+      }).catch(err => console.log("Interacción requerida:", err));
     }
   }
-  document.addEventListener('click', unmuteOnce);
-  document.addEventListener('touchstart', unmuteOnce); // touchstart entrega de inmediato el permiso de audio en iOS/Android
+
+  document.addEventListener('click', arrancarAudio);
+  document.addEventListener('touchstart', arrancarAudio);
+
+  function toggleAudio(e) {
+    if (e) e.stopPropagation();
+    
+    if (audio.paused) {
+      audio.play().then(() => {
+        audioStarted = true;
+        audioIcon.innerHTML = iconPlaying;
+        audioBtn.classList.add('glow-cyan', 'border-cyan-400');
+      }).catch(err => console.error(err));
+    } else {
+      audio.pause();
+      audioIcon.innerHTML = iconMuted;
+      audioBtn.classList.remove('glow-cyan', 'border-cyan-400');
+    }
+  }
 
   const io = new IntersectionObserver((entries)=>{
     entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('show'); });
